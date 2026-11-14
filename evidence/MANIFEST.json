@@ -1,0 +1,9 @@
+{
+  "candidate": "56288ca5a9bbc34f77f0fb89ea053f7b5e34e00b",
+  "candidate_tree": "f8d20d55781f22d08fd10cb5656831db1070d0d5",
+  "expected_old": "69b6be92bd4201f775b96219ed730f37ab9d5861",
+  "expected_parent": "46e78b5f49b853740c8839113f27b7d44264828f",
+  "files": {
+    "evidence/qualification.log": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
+}
