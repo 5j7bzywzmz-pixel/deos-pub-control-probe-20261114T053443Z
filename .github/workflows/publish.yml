@@ -15,6 +15,11 @@ on:
         description: Destination ref (must be refs/heads/production)
         required: true
         default: refs/heads/production
+      simulate_failure_after_push:
+        description: Test-only post-push interruption simulation
+        type: boolean
+        required: false
+        default: false
 permissions:
   contents: write
 concurrency:
@@ -53,6 +58,7 @@ jobs:
           DESTINATION_REF: ${{ inputs.destination_ref }}
           REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ github.token }}
+          SIMULATE_FAILURE_AFTER_PUSH: ${{ inputs.simulate_failure_after_push }}
         run: |
           set -euo pipefail
           echo "::add-mask::$GITHUB_TOKEN"
@@ -67,3 +73,7 @@ jobs:
           after=$(git ls-remote origin "$DESTINATION_REF" | awk '{print $1}')
           [ "$after" = "$CANDIDATE" ] || { echo "REFUSED: post-push mismatch $after != $CANDIDATE" >&2; exit 1; }
           echo "PUBLISHED_EXACT_SHA $CANDIDATE"
+          if [ "$SIMULATE_FAILURE_AFTER_PUSH" = "true" ]; then
+            echo "SIMULATED_POST_PUSH_INTERRUPTION" >&2
+            exit 1
+          fi
