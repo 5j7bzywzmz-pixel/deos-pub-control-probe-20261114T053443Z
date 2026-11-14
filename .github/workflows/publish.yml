@@ -52,8 +52,11 @@ jobs:
           EXPECTED_OLD: ${{ inputs.expected_old }}
           DESTINATION_REF: ${{ inputs.destination_ref }}
           REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          echo "::add-mask::$GITHUB_TOKEN"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPOSITORY}.git"
           python3 scripts/verify_publication.py
           remote_head=$(git ls-remote origin "$DESTINATION_REF" | awk '{print $1}')
           if [ "$remote_head" = "$CANDIDATE" ]; then
