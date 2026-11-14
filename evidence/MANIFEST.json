@@ -1,0 +1,9 @@
+{
+  "candidate": "46e78b5f49b853740c8839113f27b7d44264828f",
+  "candidate_tree": "f411ab60d25275a9566cd8dcf009fd81e7c88058",
+  "expected_old": "69b6be92bd4201f775b96219ed730f37ab9d5861",
+  "expected_parent": "69b6be92bd4201f775b96219ed730f37ab9d5861",
+  "files": {
+    "evidence/qualification.log": "e4df13261e63c2e78221c93395e1b1f51f0112e274329fb7cf4e77ceb3e9d925"
+  }
+}
