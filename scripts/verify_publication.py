@@ -36,7 +36,7 @@ def main():
     evidence = os.environ["EVIDENCE"]
     expected_old = os.environ["EXPECTED_OLD"]
     destination_ref = os.environ["DESTINATION_REF"]
-    repository = os.environ["REPOSITORY"]
+    repository = os.environ.get("REPOSITORY", "")
 
     for name, value in (("candidate", candidate), ("evidence", evidence),
                         ("expected_old", expected_old)):
@@ -48,7 +48,6 @@ def main():
     if destination_ref != DEST_REF:
         fail(f"destination substitution: {destination_ref!r} != {DEST_REF!r}")
 
-    git("remote", "set-url", "origin", f"https://github.com/{repository}.git")
     git("fetch", "--no-tags", "--quiet", "origin", candidate, evidence, destination_ref)
 
     git("cat-file", "-e", f"{candidate}^{{commit}}")
