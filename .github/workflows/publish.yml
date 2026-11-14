@@ -1,0 +1,66 @@
+name: publication-feasibility
+on:
+  workflow_dispatch:
+    inputs:
+      candidate:
+        description: Exact candidate commit SHA
+        required: true
+      evidence:
+        description: Exact evidence commit SHA
+        required: true
+      expected_old:
+        description: Exact expected-old destination SHA
+        required: true
+      destination_ref:
+        description: Destination ref (must be refs/heads/production)
+        required: true
+        default: refs/heads/production
+permissions:
+  contents: write
+concurrency:
+  group: deos-publication-feasibility
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate exact candidate, evidence and destination
+        env:
+          CANDIDATE: ${{ inputs.candidate }}
+          EVIDENCE: ${{ inputs.evidence }}
+          EXPECTED_OLD: ${{ inputs.expected_old }}
+          DESTINATION_REF: ${{ inputs.destination_ref }}
+          REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/verify_publication.py
+  publish:
+    needs: validate
+    environment: deos-production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Revalidate after approval and publish exact SHA
+        env:
+          CANDIDATE: ${{ inputs.candidate }}
+          EVIDENCE: ${{ inputs.evidence }}
+          EXPECTED_OLD: ${{ inputs.expected_old }}
+          DESTINATION_REF: ${{ inputs.destination_ref }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          python3 scripts/verify_publication.py
+          remote_head=$(git ls-remote origin "$DESTINATION_REF" | awk '{print $1}')
+          if [ "$remote_head" = "$CANDIDATE" ]; then
+            echo "ALREADY_PUBLISHED: no push performed"
+            exit 0
+          fi
+          git push --force-with-lease="$DESTINATION_REF:$EXPECTED_OLD" origin "$CANDIDATE:$DESTINATION_REF"
+          after=$(git ls-remote origin "$DESTINATION_REF" | awk '{print $1}')
+          [ "$after" = "$CANDIDATE" ] || { echo "REFUSED: post-push mismatch $after != $CANDIDATE" >&2; exit 1; }
+          echo "PUBLISHED_EXACT_SHA $CANDIDATE"
